@@ -1,174 +1,173 @@
-const quizData = [
-    {
-        question: "What is the capital of France?",
-        options: ["Berlin", "Madrid", "Paris", "Rome"],
-        correctAnswer: 2
-    },
+let questions = [
     {
         question: "What is 2 + 2?",
         options: ["3", "4", "5", "6"],
-        correctAnswer: 1
+        answer: 1
     },
     {
-        question: "Who wrote 'Hamlet'?",
-        options: ["Shakespeare", "Dickens", "Austen", "Hemingway"],
-        correctAnswer: 0
-    }
+        question: "What is the capital of France?",
+        options: ["Berlin", "Madrid", "Paris", "Rome"],
+        answer: 2
+    },
+    {
+        question: "Which planet is known as the Red Planet?",
+        options: ["Earth", "Mars", "Jupiter", "Saturn"],
+        answer: 1
+    },
+    // Add more questions as needed
 ];
 
 let currentQuestionIndex = 0;
 let score = 0;
 let timer;
-let timeLeft = 30;
-let studentName, studentEmail, studentRollNumber;
+let timeLeft = 45; // Timer starts at 45 seconds
 
-const questionElement = document.getElementById('question');
-const optionsElement = document.getElementById('options');
-const timerElement = document.getElementById('timer');
-const nextBtn = document.getElementById('next-btn');
-const resultElement = document.getElementById('result');
-const scoreElement = document.getElementById('score');
-const studentInfoElement = document.getElementById('student-info');
-const quizElement = document.getElementById('quiz');
-const studentTableBody = document.getElementById('student-table').getElementsByTagName('tbody')[0];
-
-// Start Quiz after taking student info
+// Start the quiz
 function startQuiz() {
-    studentName = document.getElementById('name').value;
-    studentEmail = document.getElementById('email').value;
-    studentRollNumber = document.getElementById('roll-number').value;
-
-    if (!studentName || !studentEmail || !studentRollNumber) {
-        alert("Please fill in all fields.");
-        return;
-    }
-
-    studentInfoElement.style.display = 'none';
-    quizElement.style.display = 'block';
-    startTimer();
-    loadQuestion();
-}
-
-// Timer logic
-function startTimer() {
-    timer = setInterval(() => {
-        if (timeLeft <= 0) {
-            clearInterval(timer);
-            nextQuestion();
-        } else {
-            timeLeft--;
-            timerElement.innerHTML = `Time Left: ${timeLeft}s`;
-        }
-    }, 1000);
-}
-
-// Load a question
-function loadQuestion() {
-    const currentQuestion = quizData[currentQuestionIndex];
-    questionElement.innerText = currentQuestion.question;
+    // Hide the start section and show the quiz
+    document.getElementById('student-info').style.display = 'none';
+    document.getElementById('quiz').style.display = 'block';
     
-    const options = currentQuestion.options;
-    optionsElement.innerHTML = '';
+    // Display the first question
+    displayQuestion();
+    startTimer();
+}
+
+// Display the current question
+function displayQuestion() {
+    let question = questions[currentQuestionIndex];
+    
+    // Display the question and options
+    document.getElementById('question').textContent = question.question;
+    let options = document.querySelectorAll('.option');
     options.forEach((option, index) => {
-        const optionBtn = document.createElement('button');
-        optionBtn.classList.add('option');
-        optionBtn.innerText = option;
-        optionBtn.onclick = () => selectOption(index, optionBtn);
-        optionsElement.appendChild(optionBtn);
+        option.textContent = question.options[index];
+        option.classList.remove('selected-option'); // Remove the highlight from any previous selection
     });
+    
+    // Hide the next button initially
+    document.getElementById('next-btn').style.display = 'none';
+}
+
+// Start the timer for the current question
+function startTimer() {
+    timeLeft = 45; // Reset timer to 45 seconds
+    document.getElementById('timer').textContent = `Time left: ${timeLeft}s`;
+    
+    timer = setInterval(function() {
+        timeLeft--;
+        document.getElementById('timer').textContent = `Time left: ${timeLeft}s`;
+        
+        if (timeLeft <= 0) {
+            clearInterval(timer); // Stop the timer when it reaches 0
+            nextQuestion(); // Proceed to the next question when time is up
+        }
+    }, 1000); // Update every second
 }
 
 // Select an option
-function selectOption(index, button) {
-    const correctAnswer = quizData[currentQuestionIndex].correctAnswer;
-
-    // Mark the selected option
-    button.classList.add('selected-option');
+function selectOption(index) {
+    let options = document.querySelectorAll('.option');
+    options.forEach(option => option.classList.remove('selected-option')); // Remove previous selection
+    options[index].classList.add('selected-option'); // Highlight the selected option
     
-    // Disable all other options
-    const buttons = document.querySelectorAll('.option');
-    buttons.forEach(btn => btn.disabled = true);
-
-    // Check if the selected answer is correct
-    if (index === correctAnswer) {
-        score++;
-    }
-
-    nextBtn.style.display = 'block';
+    // Show the next button when an option is selected
+    document.getElementById('next-btn').style.display = 'inline-block';
 }
 
-// Move to the next question or show results
+// Move to the next question
 function nextQuestion() {
-    if (currentQuestionIndex < quizData.length - 1) {
-        currentQuestionIndex++;
-        loadQuestion();
-        nextBtn.style.display = 'none';
-        timeLeft = 30; // reset timer for the next question
+    // Stop the timer and evaluate the answer
+    clearInterval(timer);
+    
+    let selectedOption = document.querySelector('.selected-option');
+    if (selectedOption) {
+        let selectedIndex = Array.from(selectedOption.parentElement.children).indexOf(selectedOption);
+        let correctAnswer = questions[currentQuestionIndex].answer;
+
+        if (selectedIndex === correctAnswer) {
+            score++;
+        }
+    }
+
+    // Go to the next question or finish the quiz
+    currentQuestionIndex++;
+    if (currentQuestionIndex < questions.length) {
+        displayQuestion();
+        startTimer();
     } else {
-        showResult();
+        endQuiz();
     }
 }
 
-// Show result and save record
-function showResult() {
-    resultElement.style.display = 'block';
-    scoreElement.innerText = score;
-    
-    // Save the student record in localStorage
-    const studentRecord = {
-        name: studentName,
-        email: studentEmail,
-        rollNumber: studentRollNumber,
-        score: score
-    };
-    saveRecord(studentRecord);
+// End the quiz
+function endQuiz() {
+    // Hide the quiz section and show the result
+    document.getElementById('quiz').style.display = 'none';
+    document.getElementById('result').style.display = 'block';
 
-    // Hide quiz container
-    quizElement.style.display = 'none';
+    // Display the score
+    document.getElementById('score').textContent = score;
+    
+    // Save the student data and send it to Google Form
+    saveStudentData();
 }
 
-// Save the student's record
-function saveRecord(record) {
-    let records = JSON.parse(localStorage.getItem('quizRecords')) || [];
-    
-    // Check if the student is already in the records
-    const existingRecordIndex = records.findIndex(r => r.rollNumber === record.rollNumber);
-    
-    if (existingRecordIndex === -1) {
-        // If student doesn't exist, add the new record
-        records.push(record);
-    } else {
-        // If student exists, update their score
-        records[existingRecordIndex].score = record.score;
-    }
+// Save the student data and send it to Google Form
+function saveStudentData() {
+    let name = document.getElementById('name').value;
+    let email = document.getElementById('email').value;
+    let rollNumber = document.getElementById('roll-number').value;
 
-    localStorage.setItem('quizRecords', JSON.stringify(records));
-    displayRecords(); // Update the records table
-}
+    let studentRecord = { name, email, rollNumber, score };
 
-// Display student records in the table
-function displayRecords() {
-    const records = JSON.parse(localStorage.getItem('quizRecords')) || [];
-    studentTableBody.innerHTML = ''; // Clear the existing table rows
-    records.forEach((record, index) => {
-        const row = studentTableBody.insertRow();
-        row.insertCell(0).innerText = record.name;
-        row.insertCell(1).innerText = record.email;
-        row.insertCell(2).innerText = record.rollNumber;
-        row.insertCell(3).innerText = record.score;
+    // Google Form Submit URL (replace with your form URL)
+    const googleFormURL = "https://docs.google.com/forms/d/e/1FAIpQLScX_tjZmO7EoHtNx9vA0Rxckv0VDEw3c99KvTd0hv_zdiH4XQ/formResponse";
 
-        // Add delete button to each record
-        const deleteCell = row.insertCell(4);
-        const deleteBtn = document.createElement('button');
-        deleteBtn.innerText = "Delete";
-        deleteBtn.onclick = () => deleteRecord(index);
-        deleteCell.appendChild(deleteBtn);
+    // Prepare the form data as a POST request using the updated entry IDs
+    const formData = new FormData();
+    formData.append("entry.1014193278", name);        // Name field
+    formData.append("entry.551434709", email);         // Email field
+    formData.append("entry.1304254405", rollNumber);   // Roll Number field
+    formData.append("entry.907963779", score);         // Score field
+
+    // Send the POST request to Google Form
+    fetch(googleFormURL, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        console.log("Form submitted successfully.");
+        displayRecords(); // Update the records table in your app (if applicable)
+    })
+    .catch(error => {
+        console.error("Error submitting form:", error);
     });
 }
 
-// Delete student record
+
+// Display the student records
+function displayRecords() {
+    let records = JSON.parse(localStorage.getItem('quizRecords')) || [];
+    let tableBody = document.querySelector("#student-table tbody");
+    tableBody.innerHTML = ""; // Clear existing records
+
+    records.forEach((record, index) => {
+        let row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${record.name}</td>
+            <td>${record.email}</td>
+            <td>${record.rollNumber}</td>
+            <td>${record.score}</td>
+            <td><button onclick="deleteRecord(${index})">Delete</button></td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+// Delete a student record
 function deleteRecord(index) {
-    const password = prompt("Enter password to delete record:");
+    let password = prompt("Enter password to delete record:");
     if (password === "2409") {
         let records = JSON.parse(localStorage.getItem('quizRecords')) || [];
         records.splice(index, 1); // Remove the record at the given index

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+    <style>
+        /* Adjusting the font size of the student records table */
+        #student-table th, #student-table td {
+            font-size: 10px; /* Reduced font size */
+        }
+
+        /* Adjusting input field layout */
+        .student-info label {
+            margin: 10px 0;
+            display: inline-block;
+            font-size: 14px;
+        }
+
+        .student-info input {
+            margin-bottom: 10px;
+            padding: 8px;
+            font-size: 14px;
+            width: 200px;
+        }
+
+        .student-info button {
+            padding: 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .quiz-container {
+            margin: 20px;
+        }
+
+        /* Adjusting the font size of the student records table */
+        #student-table th, #student-table td {
+            font-size: 12px;
+        }
+
+        .selected-option {
+            background-color: #4CAF50; /* Green */
+            color: white;
+        }
+
+        .option {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <!-- Student Information Form -->
+        <div id="student-info" class="student-info">
+            <h2>Enter Your Details</h2>
+            <label for="name">Name:</label>
+            <input type="text" id="name" placeholder="Your Name">
+            <label for="email">Email:</label>
+            <input type="email" id="email" placeholder="Your Email">
+            <label for="roll-number">Roll Number:</label>
+            <input type="text" id="roll-number" placeholder="Your Roll Number" style="width: 230px;">
+            <button id="start-btn" onclick="startQuiz()">Start Quiz</button>
+        </div>
+
+        <!-- Quiz Section -->
+        <div id="quiz" class="quiz" style="display: none;">
+            <div id="timer" class="timer"></div>
+            <h2 id="question"></h2>
+            <div id="options">
+                <button class="option" onclick="selectOption(0)"></button>
+                <button class="option" onclick="selectOption(1)"></button>
+                <button class="option" onclick="selectOption(2)"></button>
+                <button class="option" onclick="selectOption(3)"></button>
+            </div>
+            <button id="next-btn" onclick="nextQuestion()">Next</button>
+        </div>
+
+        <!-- Result Section -->
+        <div id="result" class="result" style="display: none;">
+            <h2>Quiz Over</h2>
+            <p>Your Score: <span id="score"></span></p>
+            <div id="student-table-container" style="margin-top: 20px;">
+                <h3>Student Records</h3>
+                <table id="student-table" border="1" cellpadding="5">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Roll Number</th>
+                            <th>Score</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <button id="download-btn" onclick="downloadExcel()">Download Excel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
